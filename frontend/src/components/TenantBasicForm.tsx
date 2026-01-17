@@ -1,4 +1,5 @@
 import React, { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom';
 
 type FormData = {
     monthlyIncome: string;
@@ -13,6 +14,8 @@ export const TenatBasicForm = () => {
         monthlyRent: "",
         creditScore: ""
     });
+
+    const navigate = useNavigate();
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -35,12 +38,23 @@ export const TenatBasicForm = () => {
         console.log("Payload:", payload);
         
         // for future
-        // await fetch("http//localhost:8000/score", {
+        // const res = await fetch("http//localhost:8000/score", {
         //     method: "POST",
         //     headers: { "Content-Type": "application/json" },
         //     body: JSON.stringify(payload)
         // });
+        //
+        // const result = await res.json()
+        
+        // => CHECK WHAT BACKEND WILL RETURN
+        navigate('/TenantScore', {
+            state: {
+                score: 78,
+                risk: "Low"
+            }
+        });
     }
+
 
     return (
         <form onSubmit={handleSubmit}>
