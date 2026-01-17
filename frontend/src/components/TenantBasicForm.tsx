@@ -7,7 +7,7 @@ type FormData = {
     creditScore: string;
 };
 
-export const TenatBasicForm = () => {
+export const TenantBasicForm = () => {
 
     const [formData, setFormData] = useState<FormData>({
         monthlyIncome: "",
@@ -47,7 +47,7 @@ export const TenatBasicForm = () => {
         // const result = await res.json()
         
         // => CHECK WHAT BACKEND WILL RETURN
-        navigate('/TenantScore', {
+        navigate('/score', {
             state: {
                 score: 78,
                 risk: "Low"
