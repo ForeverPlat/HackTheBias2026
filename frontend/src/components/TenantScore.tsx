@@ -1,4 +1,6 @@
 import { useLocation } from "react-router-dom"
+import EligibilityBar from "./EligibilityBar";
+
 
 export const TenantScore = () => {
     const location = useLocation();
@@ -13,6 +15,9 @@ export const TenantScore = () => {
             <h2>Tenant Score</h2>
             <p>Score: {score}</p>
             <p>Risk: {risk}</p>
+            <EligibilityBar score={score}/>
         </div>
+
+
     )
 }
