@@ -25,3 +25,15 @@ export type TenantInputPayload = {
   monthly_debt: number;
   income_history?: number[];
 };
+
+export type CompareModelResult = {
+  score: number;
+  risk_level?: RiskLevel;
+  impact?: number;
+  breakdown?: FeatureExplanation[];
+};
+
+export type CompareResponse = {
+  new_model: CompareModelResult;
+  legacy_model: CompareModelResult;
+};
