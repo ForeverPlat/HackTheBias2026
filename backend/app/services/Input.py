@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from pathlib import Path
 
 # # -----------------------------
 # # 1. LOAD DATA AND TRAIN MODEL
@@ -25,7 +26,6 @@ from sklearn.linear_model import LinearRegression
 # model.fit(X_train, y_train)
 
 FEATURES = [
-    'credit_score',
     'income_stability',
     'eviction_history',
     'criminal_history',
@@ -36,14 +36,17 @@ FEATURES = [
 ]
 
 NUMERIC_COLS = [
-    'credit_score',
     'income_stability',
     'employment_years',
     'savings_ratio',
     'rental_history_years'
 ]
 
-def train_model(path="../data/tenant_data_biased_train.csv"):
+BACKEND_DIR = Path(__file__).resolve().parents[2]   # .../backend
+DATA_PATH = BACKEND_DIR / "data" / "tenant_data_biased_train.csv"
+
+def train_model(path=DATA_PATH):
+    path = Path(path)
     train_df = pd.read_csv(path)
 
     X_train = train_df[FEATURES].copy()
