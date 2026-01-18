@@ -4,11 +4,11 @@ import EligibilityBar from "./EligibilityBar";
 
 export const TenantScore = () => {
     const location = useLocation();
-    // const { score, risk } = location.state || {};
+    const { score, risk } = location.state || {};
     
     // temp
-    const score = 78
-    const risk = "Low"
+    // const score = 78
+    // const risk = "Low"
     
     return (
         <div>
