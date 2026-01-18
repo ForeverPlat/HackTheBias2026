@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { CompareResponse, TenantInputPayload } from "../types/tenant";
 import { compareTenant } from "../services/api";
@@ -21,61 +21,170 @@ function round1(n: number) {
   return Math.round(n * 10) / 10;
 }
 
-function formatSigned(n: number, decimals = 1) {
-  const v = decimals === 0 ? Math.round(n) : round1(n);
-  const sign = v > 0 ? "+" : "";
-  return `${sign}${v}`;
-}
-
-function pctChange(oldVal: number, newVal: number) {
-  if (oldVal === 0) return null;
-  return (newVal - oldVal) / Math.abs(oldVal);
-}
-
-function formatPct(p: number) {
-  const abs = Math.abs(p);
-  if (abs >= 0.1) return `${Math.round(abs * 100)}%`;
-  return `${round1(abs * 100)}%`;
-}
-
 function money(n: number) {
   return `$${Math.round(n).toLocaleString()}`;
 }
 
-function Icon({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      aria-hidden="true"
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 12,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "1px solid rgba(0,0,0,0.08)",
-        background: "rgba(0,0,0,0.02)",
-      }}
-    >
-      {children}
-    </span>
-  );
+function pctReduction(oldVal: number, newVal: number) {
+  // positive number means "reduction"
+  if (oldVal === 0) return null;
+  return (oldVal - newVal) / Math.abs(oldVal);
+}
+
+function pctText(p: number) {
+  const abs = Math.abs(p);
+  // demo-friendly: 0 decimals for big %, 1 decimal for small
+  if (abs >= 0.1) return `${Math.round(abs * 100)}%`;
+  return `${round1(abs * 100)}%`;
 }
 
 function pickImpact(impact?: Record<string, number>) {
-  if (!impact) return { missedMonths: null as number | null, annualLoss: null as number | null };
 
   const missedMonths =
-    impact.expect_missed_months ??
-    impact.expected_missed_months ??
+    impact?.expect_missed_months ??
+    impact?.expected_missed_months ??
     null;
 
   const annualLoss =
-    impact.expected_annual_losses ?? 
-    impact.expected_annual_losses ?? 
+    impact?.expected_anual_loss ?? 
+    impact?.expected_annual_loss ??
     null;
 
   return { missedMonths, annualLoss };
+}
+
+function StatTile(props: { icon: string; label: string; value: string; delta?: string }) {
+  return (
+    <div className="card" style={{ padding: 14 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <span
+          aria-hidden="true"
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 12,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "1px solid rgba(0,0,0,0.08)",
+            background: "rgba(0,0,0,0.02)",
+            fontSize: 16,
+          }}
+        >
+          {props.icon}
+        </span>
+
+        <div>
+          <div className="muted" style={{ fontWeight: 800 }}>
+            {props.label}
+          </div>
+          <div style={{ fontWeight: 950, fontSize: 18 }}>{props.value}</div>
+          {props.delta ? (
+            <div className="muted" style={{ marginTop: 2, fontWeight: 800 }}>
+              {props.delta}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BarRow(props: {
+  label: string;
+  legacyLabel?: string;
+  newLabel?: string;
+  legacyValue: number | null;
+  newValue: number | null;
+  formatValue: (n: number) => string;
+  fixedMax?: number; // e.g. 100 for score
+}) {
+  if (props.legacyValue == null || props.newValue == null) {
+    return (
+      <div style={{ paddingTop: 10, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ fontWeight: 900 }}>{props.label}</div>
+          <div className="muted" style={{ fontWeight: 800 }}>
+            Not available
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const legacy = props.legacyValue;
+  const newer = props.newValue;
+
+  const max = props.fixedMax ?? Math.max(legacy, newer, 1);
+  const legacyW = Math.max(2, (legacy / max) * 100);
+  const newW = Math.max(2, (newer / max) * 100);
+
+  return (
+      <div
+        style={{
+          paddingTop: 18,
+          paddingBottom: 18,
+          borderTop: "1px solid rgba(0,0,0,0.06)",
+        }}
+      >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
+        <div style={{ fontWeight: 900 }}>{props.label}</div>
+        <div className="muted" style={{ fontWeight: 800 }}>
+          Legacy {props.formatValue(legacy)} → FairTenant {props.formatValue(newer)}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div
+            className="muted"
+            style={{
+              width: 110,
+              paddingRight: 12,
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {props.legacyLabel ?? "Legacy"}
+          </div>
+          <div style={{ flex: 1, height: 10, background: "rgba(0,0,0,0.06)", borderRadius: 999 }}>
+            <div
+              style={{
+                width: `${legacyW}%`,
+                height: "100%",
+                borderRadius: 999,
+                background: "rgba(0,0,0,0.30)",
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div
+            className="muted"
+            style={{
+              width: 110,
+              paddingRight: 12,
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {props.newLabel ?? "FairTenant"}
+          </div>
+          <div style={{ flex: 1, height: 10, background: "rgba(0,0,0,0.06)", borderRadius: 999 }}>
+            <div
+              style={{
+                width: `${newW}%`,
+                height: "100%",
+                borderRadius: 999,
+                background: "var(--accent, #2563eb)",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Comparison() {
@@ -115,92 +224,11 @@ export default function Comparison() {
     };
   }, [payload]);
 
-  // Always-available primitives (so hooks are never conditional)
-  const legacyScore = clamp(data?.legacy_model?.score ?? 0);
-  const newScore = clamp(data?.new_model?.score ?? 0);
-  const scoreDelta = data ? newScore - legacyScore : 0;
-
-  const legacyImpact = pickImpact(data?.legacy_model?.impact);
-  const newImpact = pickImpact(data?.new_model?.impact);
-
-  const missedDelta =
-    legacyImpact.missedMonths != null && newImpact.missedMonths != null
-      ? newImpact.missedMonths - legacyImpact.missedMonths // new - old
-      : null;
-
-  const annualLossDelta =
-    legacyImpact.annualLoss != null && newImpact.annualLoss != null
-      ? newImpact.annualLoss - legacyImpact.annualLoss // new - old
-      : null;
-
-  const missedPct =
-    legacyImpact.missedMonths != null && newImpact.missedMonths != null
-      ? pctChange(legacyImpact.missedMonths, newImpact.missedMonths)
-      : null;
-
-  const annualLossPct =
-    legacyImpact.annualLoss != null && newImpact.annualLoss != null
-      ? pctChange(legacyImpact.annualLoss, newImpact.annualLoss)
-      : null;
-
-  const top2 = useMemo(() => {
-    const items: Array<{ label: string; value: string; good: boolean }> = [];
-
-    if (annualLossPct != null) {
-      const good = annualLossPct < 0;
-      items.push({
-        label: "Expected annual loss",
-        value: `${good ? "reduced" : "increased"} ${formatPct(annualLossPct)}`,
-        good,
-      });
-    } else {
-      items.push({ label: "Expected annual loss", value: "not provided", good: false });
-    }
-
-    if (missedPct != null) {
-      const good = missedPct < 0;
-      items.push({
-        label: "Expected missed months",
-        value: `${good ? "reduced" : "increased"} ${formatPct(missedPct)}`,
-        good,
-      });
-    } else {
-      items.push({ label: "Expected missed months", value: "not provided", good: false });
-    }
-
-    // If you want score as a fallback “improvement” when one metric is missing:
-    if (items.filter((x) => x.value !== "not provided").length < 2) {
-      items.push({
-        label: "Reliability score",
-        value:
-          scoreDelta === 0
-            ? "no change"
-            : `${scoreDelta > 0 ? "increased" : "decreased"} ${Math.abs(round1(scoreDelta))} pts`,
-        good: scoreDelta > 0,
-      });
-    }
-
-    // Prefer “good” changes, then magnitude
-    return items
-      .sort((a, b) => Number(b.good) - Number(a.good))
-      .slice(0, 2);
-  }, [annualLossPct, missedPct, scoreDelta]);
-
-  const headline = (() => {
-    if (annualLossPct != null) {
-      return `Expected annual loss ${annualLossPct < 0 ? "reduced" : "increased"} by ${formatPct(annualLossPct)}`;
-    }
-    if (missedPct != null) {
-      return `Expected missed months ${missedPct < 0 ? "reduced" : "increased"} by ${formatPct(missedPct)}`;
-    }
-    return `Score changed ${formatSigned(scoreDelta, 1)} pts`;
-  })();
-
   if (!payload) {
     return (
       <div className="card">
         <h2 className="page-title">No comparison available</h2>
-        <p className="muted">Run an evaluation first so we can compare models.</p>
+        <p className="muted">Run an evaluation first.</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link className="btn btn-primary" to="/">Go to form</Link>
           <Link className="btn" to="/score">Back to score</Link>
@@ -241,173 +269,152 @@ export default function Comparison() {
     );
   }
 
+  const legacyScore = clamp(data.legacy_model.score);
+  const newScore = clamp(data.new_model.score);
+
+  const legacyImpact = pickImpact(data.legacy_model.impact);
+  const newImpact = pickImpact(data.new_model.impact);
+
+  const lossRed =
+    legacyImpact.annualLoss != null && newImpact.annualLoss != null
+      ? pctReduction(legacyImpact.annualLoss, newImpact.annualLoss)
+      : null;
+
+  const missedRed =
+    legacyImpact.missedMonths != null && newImpact.missedMonths != null
+      ? pctReduction(legacyImpact.missedMonths, newImpact.missedMonths)
+      : null;
+
+  // Pick the “headline win”: prefer annual loss reduction if available
+  const headline =
+    lossRed != null
+      ? `Expected annual loss reduced by ${pctText(lossRed)}`
+      : missedRed != null
+      ? `Expected missed months reduced by ${pctText(missedRed)}`
+      : `Score difference: ${round1(newScore - legacyScore)} points`;
+
+  const lossDelta =
+    legacyImpact.annualLoss != null && newImpact.annualLoss != null
+      ? legacyImpact.annualLoss - newImpact.annualLoss
+      : null;
+
+  const missedDelta =
+    legacyImpact.missedMonths != null && newImpact.missedMonths != null
+      ? legacyImpact.missedMonths - newImpact.missedMonths
+      : null;
+
   return (
     <div className="stack" style={{ gap: 16 }}>
-      {/* Header */}
+      {/* Minimal header + headline */}
       <div className="card" style={{ padding: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
-          <div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <Icon>⚖️</Icon>
-              <h2 className="page-title" style={{ margin: 0 }}>Comparison</h2>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span
+              aria-hidden="true"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid rgba(0,0,0,0.08)",
+                background: "rgba(0,0,0,0.02)",
+                fontSize: 18,
+              }}
+            >
+              ⚖️
+            </span>
+            <div>
+              <div style={{ fontWeight: 950, fontSize: 22 }}>Comparison</div>
+              <div className="muted" style={{ fontWeight: 700 }}>
+                Legacy vs FairTenant on the same applicant
+              </div>
             </div>
-            <p className="muted" style={{ marginTop: 10, marginBottom: 0 }}>
-              Same applicant, two scoring approaches.
-            </p>
           </div>
-          <Link className="btn" to="/score">Back</Link>
+
+          <Link className="btn" to="/score">
+            Back
+          </Link>
         </div>
 
-        {/* Hero headline */}
         <div className="card" style={{ padding: 14, marginTop: 14 }}>
-          <div style={{ fontWeight: 900, fontSize: 18 }}>{headline}</div>
-          <div className="muted" style={{ marginTop: 6 }}>
-            We quantify impact as expected missed months and expected annual loss.
-          </div>
+          <div style={{ fontWeight: 950, fontSize: 20 }}>{headline}</div>
         </div>
 
-        {/* Quick tiles */}
+        {/* Only the most significant KPI tiles */}
         <div
           style={{
             marginTop: 12,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
             gap: 12,
           }}
         >
-          <div className="card" style={{ padding: 14 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <Icon>💸</Icon>
-              <div>
-                <div style={{ fontWeight: 900 }}>Expected annual loss</div>
-                <div className="muted" style={{ marginTop: 2 }}>
-                  {annualLossDelta == null
-                    ? "Not available"
-                    : `${annualLossDelta < 0 ? "Reduced" : "Increased"} ${money(Math.abs(annualLossDelta))}`}
-                  {annualLossPct != null ? ` (${formatPct(annualLossPct)})` : ""}
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatTile
+            icon="💸"
+            label="Expected annual loss"
+            value={
+              newImpact.annualLoss == null ? "—" : money(newImpact.annualLoss)
+            }
+            delta={
+              lossDelta == null
+                ? undefined
+                : `↓ ${money(lossDelta)}${lossRed != null ? ` (${pctText(lossRed)})` : ""}`
+            }
+          />
 
-          <div className="card" style={{ padding: 14 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <Icon>📆</Icon>
-              <div>
-                <div style={{ fontWeight: 900 }}>Expected missed months</div>
-                <div className="muted" style={{ marginTop: 2 }}>
-                  {missedDelta == null
-                    ? "Not available"
-                    : `${missedDelta < 0 ? "Reduced" : "Increased"} ${Math.abs(round1(missedDelta))} months`}
-                  {missedPct != null ? ` (${formatPct(missedPct)})` : ""}
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatTile
+            icon="📆"
+            label="Expected missed months"
+            value={
+              newImpact.missedMonths == null ? "—" : `${round1(newImpact.missedMonths)} months`
+            }
+            delta={
+              missedDelta == null
+                ? undefined
+                : `↓ ${round1(missedDelta)} months${missedRed != null ? ` (${pctText(missedRed)})` : ""}`
+            }
+          />
+
+          <StatTile
+            icon="📈"
+            label="Score"
+            value={`${round1(newScore)}/100`}
+            delta={`Legacy ${round1(legacyScore)}/100`}
+          />
         </div>
       </div>
 
-      {/* Top 2 changes (short) */}
+      {/* Visual difference (this is what people actually look at) */}
       <div className="card" style={{ padding: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-          <strong>Top changes</strong>
-          <span className="muted">quick read</span>
+          <strong>Visual difference</strong>
+          <span className="muted">bigger bar = higher value</span>
         </div>
 
-        <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
-          {top2.map((x) => (
-            <div
-              key={x.label}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                borderTop: "1px solid rgba(0,0,0,0.06)",
-                paddingTop: 10,
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 900 }}>{x.label}</div>
-                <div className="muted" style={{ marginTop: 2 }}>{x.value}</div>
-              </div>
-              <span
-                className="badge"
-                style={{
-                  alignSelf: "center",
-                  fontWeight: 900,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  textTransform: "uppercase",
-                  letterSpacing: 0.6,
-                  fontSize: 12,
-                }}
-              >
-                {x.good ? "Improved" : "Changed"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+        <div style={{ marginTop: 10, display: "grid", gap: 22 }}>
+          <BarRow
+            label="Score"
+            legacyValue={legacyScore}
+            newValue={newScore}
+            formatValue={(n) => `${round1(n)}`}
+            fixedMax={100}
+          />
 
-      {/* Side-by-side cards */}
-      <div
-        style={{
-          display: "grid",
-          gap: 14,
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-        }}
-      >
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-            <strong>Legacy model</strong>
-            <span className="muted">baseline</span>
-          </div>
+          <BarRow
+            label="Expected missed months"
+            legacyValue={legacyImpact.missedMonths}
+            newValue={newImpact.missedMonths}
+            formatValue={(n) => `${round1(n)} mo`}
+          />
 
-          <div style={{ marginTop: 10, fontSize: 40, fontWeight: 900 }}>
-            {round1(legacyScore)}
-            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>/100</span>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <div className="muted" style={{ fontWeight: 800 }}>Expected missed months</div>
-            <div style={{ fontWeight: 900, marginTop: 4 }}>
-              {legacyImpact.missedMonths == null ? "—" : `${round1(legacyImpact.missedMonths)} months`}
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <div className="muted" style={{ fontWeight: 800 }}>Expected annual loss</div>
-            <div style={{ fontWeight: 900, marginTop: 4 }}>
-              {legacyImpact.annualLoss == null ? "—" : money(legacyImpact.annualLoss)}
-            </div>
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-            <strong>FairTenant model</strong>
-            <span style={{ fontWeight: 800 }}>{data.new_model.risk_level ?? "—"}</span>
-          </div>
-
-          <div style={{ marginTop: 10, fontSize: 40, fontWeight: 900 }}>
-            {round1(newScore)}
-            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>/100</span>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <div className="muted" style={{ fontWeight: 800 }}>Expected missed months</div>
-            <div style={{ fontWeight: 900, marginTop: 4 }}>
-              {newImpact.missedMonths == null ? "—" : `${round1(newImpact.missedMonths)} months`}
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <div className="muted" style={{ fontWeight: 800 }}>Expected annual loss</div>
-            <div style={{ fontWeight: 900, marginTop: 4 }}>
-              {newImpact.annualLoss == null ? "—" : money(newImpact.annualLoss)}
-            </div>
-          </div>
+          <BarRow
+            label="Expected annual loss"
+            legacyValue={legacyImpact.annualLoss}
+            newValue={newImpact.annualLoss}
+            formatValue={(n) => money(n)}
+          />
         </div>
       </div>
 
