@@ -13,7 +13,7 @@ voucher = np.array([np.random.choice([0,1], p=[0.8,0.2]) if r=='White'
                     else np.random.choice([0,1], p=[0.5,0.5]) if r=='Black' 
                     else np.random.choice([0,1], p=[0.6,0.4]) for r in races])
 
-# Credit score with disparities
+# Credit score with disparities 
 credit_scores = []
 for r in races:
     if r == 'White': credit_scores.append(np.random.normal(725, 50))
@@ -36,9 +36,6 @@ savings_ratio = np.clip(np.random.normal(0.1 + 0.05*(income_stability/100), 0.05
 
 rental_history_years = np.clip(np.random.normal(3 + 0.5*income_stability/100, 2, n), 0, 20)
 
-# -------------------
-# Deterministic approval based on features
-# -------------------
 # Define a score
 # Higher credit, higher income stability = better
 # Eviction or criminal history = worse

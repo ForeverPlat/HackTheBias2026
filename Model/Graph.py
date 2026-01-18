@@ -1,32 +1,28 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import numpy as np # for handling and vector on data
+import matplotlib.pyplot as plt # graphing
+import seaborn as sns # Plotting
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
 
-# --------------------------
-# 1. LOAD DATA
-# --------------------------
+# Load data
 train_df = pd.read_csv("tenant_data_biased_train.csv")
 test_df  = pd.read_csv("tenant_data_biased_test.csv")
 
-# Encode race for correlation
+# change the race to num to correlate with data
 race_map = {'White': 0, 'Black': 1, 'Hispanic': 2}
 test_df['race_encoded'] = test_df['race'].map(race_map)
 
-y_train = train_df['approved']
+y_train = train_df['approved'] # the out column of the data
 y_test  = test_df['approved']
 
-# --------------------------
-# 2. BOTH MODELS IN ONE SECTION
-# --------------------------
+# the good and bad model
 
-# ----- MODEL A: with credit score -----
+# Model A
 features_A = ['credit_score','eviction_history','criminal_history','income_stability','voucher']
 
+# copies the feature into a new data frame
 X_train_A = train_df[features_A].copy()
 X_test_A  = test_df[features_A].copy()
 
@@ -40,9 +36,7 @@ model_A.fit(X_train_A, y_train)
 test_df['pred_A'] = model_A.predict(X_test_A)
 
 # Metrics for Model A
-corr_A = np.corrcoef(test_df['pred_A'], test_df['race_encoded'])[0,1]
-mse_A = mean_squared_error(y_test, test_df['pred_A'])
-r2_A  = r2_score(y_test, test_df['pred_A'])
+corr_A = np.corrcoef(test_df['pred_A'], test_df['race_encoded'])[0,1] 
 
 # ----- MODEL B: without credit score -----
 features_B = ['eviction_history','criminal_history','income_stability','voucher','employment_years','savings_ratio','rental_history_years']
@@ -63,8 +57,6 @@ test_df['pred_B'] = model_B.predict(X_test_B)
 
 # Metrics for Model B
 corr_B = np.corrcoef(test_df['pred_B'], test_df['race_encoded'])[0,1]
-mse_B = mean_squared_error(y_test, test_df['pred_B'])
-r2_B  = r2_score(y_test, test_df['pred_B'])
 
 # --------------------------
 # 3. PRINT RESULTS
