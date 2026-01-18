@@ -36,6 +36,23 @@ savings_ratio = np.clip(np.random.normal(0.1 + 0.05*(income_stability/100), 0.05
 
 rental_history_years = np.clip(np.random.normal(3 + 0.5*income_stability/100, 2, n), 0, 20)
 
+# Monthly income based on race benchmarks (USD)
+race_base_income = np.where(
+    races == 'White', 6400,
+    np.where(races == 'Black', 4200, 4800)
+)
+
+monthly_income = (
+    race_base_income *
+    (income_stability / 100) *      # stability adjustment
+    (1 - 0.25 * voucher) +           # voucher penalty
+    np.random.normal(0, 600, n)      # noise
+)
+
+monthly_income = np.clip(monthly_income, 800, 20000)
+income_component = np.log(monthly_income + 1)
+income_component = (income_component - income_component.mean()) / income_component.std()
+
 # Define a score
 # Higher credit, higher income stability = better
 # Eviction or criminal history = worse
@@ -46,7 +63,8 @@ score = (
     0.2*criminal_history +              # criminal penalty
     0.05*employment_years +       
     0.1*savings_ratio +            
-    0.03*rental_history_years  
+    0.03*rental_history_years+
+    0.25 * income_component  
 )
 
 # # Introduce systemic bias
@@ -66,6 +84,7 @@ df = pd.DataFrame({
     'eviction_history': eviction_history,
     'criminal_history': criminal_history,
     'income_stability': income_stability,
+    'monthly_income': monthly_income,
     'approved': score,
     'employment_years' : employment_years,
     'savings_ratio' : savings_ratio,
