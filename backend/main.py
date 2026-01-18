@@ -1,16 +1,19 @@
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from app.routes import score
 from pydantic import BaseModel, Field
 import pandas as pd
 
-from model import load_or_train, predict_score_risk, audit
+# from model import load_or_train, predict_score_risk, audit
 
 
 TRAIN_CSV_PATH = "data/synthetic_train.csv"
 DEFAULT_RISK_THRESHOLD = 0.50
 
 app = FastAPI(title="Tenant Risk API")
+
+app.include_router(score.router)
 
 
 class TenantInput(BaseModel):
@@ -82,3 +85,6 @@ async def audit_endpoint(file: UploadFile = File(...), risk_threshold: float = D
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+    # if __name__
