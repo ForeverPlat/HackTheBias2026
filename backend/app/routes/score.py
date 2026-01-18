@@ -39,9 +39,9 @@ def compare_score(request: TenantInput):
 
     return {
         "new_model": {
-            "score": new_score["score"],
-            "risk_level": new_score["risk_level"],
-            "breakdown": explanations
+            "score": score_result["score"],
+            "risk_level": score_result["risk_level"],
+            "breakdown": explaintions
         },
         "legacy_model": {
             "score": legacy["score"]
