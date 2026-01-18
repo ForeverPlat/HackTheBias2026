@@ -29,7 +29,6 @@ FEATURES = [
     'income_stability',
     'eviction_history',
     'criminal_history',
-    'monthly_income',
     'voucher',
     'employment_years',
     'savings_ratio',
@@ -38,7 +37,6 @@ FEATURES = [
 
 NUMERIC_COLS = [
     'income_stability',
-    'monthly_income',
     'employment_years',
     'savings_ratio',
     'rental_history_years'

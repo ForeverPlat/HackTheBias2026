@@ -1,3 +1,4 @@
+from app.services.legacy_score import score_legacy
 from fastapi import APIRouter 
 from app.schemas.tenant import TenantInput 
 from app.schemas.score import ScoreResponse
@@ -9,8 +10,7 @@ from app.services.explain import explain_features
 router = APIRouter(prefix="/api/score", tags=["Score"])
 
 @router.post("", response_model=ScoreResponse)
-def get_score(request: TenantInput): # eventyally send in user id as well so u get a specific user preferences
-    # return await recommendation.get_recommendations(request.restaurants, request.user_id)
+def get_score(request: TenantInput):
 
     # calc fincial ftrs
     features = compute_features(request)
@@ -26,4 +26,24 @@ def get_score(request: TenantInput): # eventyally send in user id as well so u g
         "score": score_result["score"],
         "risk_level": score_result["risk_level"],
         "breakdown": explaintions
+    }
+
+@router.post("/compare")
+def compare_score(request: TenantInput):
+
+    features = compute_features(request)
+    score_result = score_features(features)
+    explaintions = explain_features(features)
+
+    legacy = score_legacy(request)
+
+    return {
+        "new_model": {
+            "score": new_score["score"],
+            "risk_level": new_score["risk_level"],
+            "breakdown": explanations
+        },
+        "legacy_model": {
+            "score": legacy["score"]
+        }
     }
