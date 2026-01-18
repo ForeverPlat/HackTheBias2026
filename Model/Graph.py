@@ -69,20 +69,40 @@ print("\nModel B (without credit score)")
 print(" Correlation with race:", round(corr_B, 3))
 
 # --------------------------
-# 4. GRAPH RACIAL DISPARITIES
+# 4. GRAPH RACIAL DISPARITIES (with correlation)
 # --------------------------
 approval_A = test_df.groupby('race')['pred_A'].mean()
 approval_B = test_df.groupby('race')['pred_B'].mean()
 
 fig, axes = plt.subplots(1, 2, figsize=(12,5))
 
+# --- Model A ---
 sns.barplot(x=approval_A.index, y=approval_A.values, ax=axes[0])
 axes[0].set_title("Model A: With Credit Score")
 axes[0].set_ylabel("Predicted Score")
 
+axes[0].text(
+    0.5, 0.9,
+    f"Corr with race = {corr_A:.3f}",
+    transform=axes[0].transAxes,
+    ha='center',
+    fontsize=11,
+    bbox=dict(facecolor='white', alpha=0.7)
+)
+
+# --- Model B ---
 sns.barplot(x=approval_B.index, y=approval_B.values, ax=axes[1])
 axes[1].set_title("Model B: Without Credit Score")
 axes[1].set_ylabel("Predicted Score")
+
+axes[1].text(
+    0.5, 0.9,
+    f"Corr with race = {corr_B:.3f}",
+    transform=axes[1].transAxes,
+    ha='center',
+    fontsize=11,
+    bbox=dict(facecolor='white', alpha=0.7)
+)
 
 plt.tight_layout()
 plt.show()
