@@ -5,7 +5,7 @@ np.random.seed(42)
 n = 5000
 a=0
 
-# Race array 
+# Race array    
 races = np.random.choice(['White','Black','Hispanic'], p=[0.5,0.3,0.2], size=n)
 
 # Voucher based of race
