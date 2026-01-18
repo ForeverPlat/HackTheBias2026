@@ -1,12 +1,10 @@
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import EvaluateTenant from "./pages/EvaluateTenant";
 import Results from "./pages/Results";
+import Comparison from "./pages/Comparison";
 import Footer from "./components/Footer";
 
 function Hero() {
-  const { pathname } = useLocation();
-  const isResults = pathname === "/score";
-
   return (
     <section className="hero">
       <div className="hero-inner hero-center">
@@ -37,6 +35,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<EvaluateTenant />} />
             <Route path="/score" element={<Results />} />
+            <Route path="/comparison" element={<Comparison />} /> 
           </Routes>
         </main>
 

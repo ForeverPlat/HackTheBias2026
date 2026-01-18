@@ -29,7 +29,7 @@ export type TenantInputPayload = {
 export type CompareModelResult = {
   score: number;
   risk_level?: RiskLevel;
-  impact?: number;
+  impact?: Record<string, number>;
   breakdown?: FeatureExplanation[];
 };
 
