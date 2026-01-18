@@ -1,24 +1,49 @@
-from fastapi import FastAPI
+from app.services.legacy_score import score_legacy
 from fastapi import APIRouter 
-from pydantic import BaseModel
-from app.services import Input
-
-app = FastAPI()
+from app.schemas.tenant import TenantInput 
+from app.schemas.score import ScoreResponse
+# from app.services import Input
+from app.services.features import compute_features
+from app.services.score import score_features
+from app.services.explain import explain_features
 
 router = APIRouter(prefix="/api/score", tags=["Score"])
 
-class ScoreRequest(BaseModel):
-    credit_score: float
-    income_stability: float
-    eviction_history: bool # convert to int
-    criminal_history: bool # convert to int
-    voucher: bool # convert to int
-    employment_years: float
-    savings_ratio: float # 0 to 1
-    rental_history_years: float
-    
+@router.post("", response_model=ScoreResponse)
+def get_score(request: TenantInput):
 
-@router.post("")
-async def get_score(request: ScoreRequest): # eventyally send in user id as well so u get a specific user preferences
-    # return await recommendation.get_recommendations(request.restaurants, request.user_id)
-    return Input.score_tenant(request)
+    # calc fincial ftrs
+    features = compute_features(request)
+
+    # eval risk based on features
+    score_result = score_features(features)
+
+    # gen explaintion
+    explaintions = explain_features(features)
+
+
+    return {
+        "score": score_result["score"],
+        "risk_level": score_result["risk_level"],
+        "breakdown": explaintions
+    }
+
+@router.post("/compare")
+def compare_score(request: TenantInput):
+
+    features = compute_features(request)
+    score_result = score_features(features)
+    explaintions = explain_features(features)
+
+    legacy = score_legacy(request)
+
+    return {
+        "new_model": {
+            "score": new_score["score"],
+            "risk_level": new_score["risk_level"],
+            "breakdown": explanations
+        },
+        "legacy_model": {
+            "score": legacy["score"]
+        }
+    }
