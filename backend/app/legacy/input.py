@@ -91,15 +91,15 @@ MODEL, SCALER, MIN_SCORE, MAX_SCORE = train_model()
 
 def preprocess_data(data):
     df = pd.DataFrame([{
-        'credit_score': data.credit_score,
-        'income_stability': data.income_stability,
-        'monthly_income': data.monthly_income,
-        'eviction_history': int(data.eviction_history),
-        'criminal_history': int(data.criminal_history),
-        'voucher': int(data.voucher),
-        'employment_years': data.employment_years,
-        'savings_ratio': data.savings_ratio,
-        'rental_history_years': data.rental_history_years
+        'credit_score': data["credit_score"],
+        'income_stability': data["income_stability"],
+        'monthly_income': data["monthly_income"],
+        'eviction_history': int(data["eviction_history"]),
+        'criminal_history': int(data["criminal_history"]),
+        'voucher': int(data["voucher"]),
+        'employment_years': data["employment_years"],
+        'savings_ratio': data["savings_ratio"],
+        'rental_history_years': data["rental_history_years"]
     }])
 
     return df

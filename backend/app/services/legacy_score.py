@@ -1,5 +1,6 @@
 from app.legacy.input import score_tenant as legacy_score
 from app.schemas.tenant import TenantInput
+from app.services.impact import calculate_impact
 
 #FEATURES = [
 #    'income_stability',
@@ -32,9 +33,9 @@ def adapt_to_legacy_features(tenant: TenantInput) -> dict:
     if income_to_rent < 2:
         voucher = 1
 
-    saving_ratio = 0
+    savings_ratio = 0
     if income > 0:
-        saving_ratio = min(1.0, savings / (income * 6))
+        savings_ratio = min(1.0, savings / (income * 6))
 
     return {
         # assumptions
@@ -44,8 +45,9 @@ def adapt_to_legacy_features(tenant: TenantInput) -> dict:
         "criminal_history": 0,  # default no
         "voucher": voucher,
         "employment_years": min(5, savings_runway),
-        "savings_ratio": saving_ratio,
-        "rental_history_years": min(5, savings_runway)
+        "savings_ratio": savings_ratio,
+        "rental_history_years": min(5, savings_runway),
+        "monthly_income": income
     }
 
 def score_legacy(tenant_request):
@@ -54,8 +56,12 @@ def score_legacy(tenant_request):
 
     score = result["score"]
 
+    # impact = calculate_impact(score, monthly_rent=tenant_request.monthly_rent)
+
+
     return {
-        "score": result["score"],
+        "score": score,
+        # "impact": impact,
         "model": "legacy_model"
     }
 

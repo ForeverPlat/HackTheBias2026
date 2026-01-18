@@ -1,3 +1,4 @@
+from app.services.impact import calculate_impact
 from app.services.legacy_score import score_legacy
 from fastapi import APIRouter 
 from app.schemas.tenant import TenantInput 
@@ -31,11 +32,17 @@ def get_score(request: TenantInput):
 @router.post("/compare")
 def compare_score(request: TenantInput):
 
+    # new
     features = compute_features(request)
     score_result = score_features(features)
     explaintions = explain_features(features)
+    rent = request.monthly_rent
+
+    new_impact = calculate_impact(score_result["score"], rent)
+
 
     legacy = score_legacy(request)
+    legacy_impact = calculate_impact(legacy["score"], rent)
 
     return {
         "new_model": {
@@ -44,6 +51,7 @@ def compare_score(request: TenantInput):
             "breakdown": explaintions
         },
         "legacy_model": {
-            "score": legacy["score"]
+            "score": legacy["score"],
+            "impact": legacy_impact
         }
     }
