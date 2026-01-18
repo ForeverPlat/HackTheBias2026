@@ -5,7 +5,7 @@ import statistics
 
 
 # convert the landlord input into financial facts
-def compute_features(tenat: TenantInput):
+def compute_features(tenant: TenantInput):
 
     income = tenant.monthly_income
     rent = tenant.monthly_rent

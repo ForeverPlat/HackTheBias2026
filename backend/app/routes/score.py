@@ -1,13 +1,14 @@
 from fastapi import APIRouter 
 from app.schemas.tenant import TenantInput 
-from app.services import Input
+from app.schemas.score import ScoreResponse
+# from app.services import Input
 from app.services.features import compute_features
 from app.services.score import score_features
 from app.services.explain import explain_features
 
 router = APIRouter(prefix="/api/score", tags=["Score"])
 
-@router.post("")
+@router.post("", response_model=ScoreResponse)
 def get_score(request: TenantInput): # eventyally send in user id as well so u get a specific user preferences
     # return await recommendation.get_recommendations(request.restaurants, request.user_id)
 

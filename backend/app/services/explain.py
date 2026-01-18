@@ -1,6 +1,7 @@
 from app.config.constants import GOOD_INCOME_TO_RENT, GOOD_SAVINGS_RUNWAY, LOW_STRESS_PSI
+from app.schemas.score import FeatureExplanation
 
-def explain_features(features):
+def explain_features(features) -> list[FeatureExplanation]:
     explanations = []
 
     itr = features["income_to_rent"]
