@@ -10,9 +10,9 @@ def explain_features(features) -> list[FeatureExplanation]:
         "value": f"{int(100 / itr)}%" if itr > 0 else "N/A",
         "status": "good" if itr >= GOOD_INCOME_TO_RENT else "risk",
         "explanation": (
-            "Rent consumes a low share of income"
+            "Rent represents a sustainable portion of the applicant’s income"
             if itr >= GOOD_INCOME_TO_RENT
-            else "Rent consumes a high share of income"
+            else "Rent represents an elevated risk relative to the applicant’s income"
         ),
     })
 
@@ -22,9 +22,9 @@ def explain_features(features) -> list[FeatureExplanation]:
         "value": f"{int(savings)} months",
         "status": "good" if savings >= GOOD_SAVINGS_RUNWAY else "moderate",
         "explanation": (
-            "Strong financial buffer against income shocks"
+            "Applicant has sufficient reserves to cover rent during income disruption"
             if savings >= GOOD_SAVINGS_RUNWAY
-            else "Limited savings buffer"
+            else "Applicant has limited reserves to cover rent if income is disrupted"
         ),
     })
 
@@ -34,9 +34,9 @@ def explain_features(features) -> list[FeatureExplanation]:
         "value": f"{round(psi, 2)}",
         "status": "good" if psi <= LOW_STRESS_PSI else "risk",
         "explanation": (
-            "Low financial stress after obligations"
+            "Applicant retains adequate income after obligations to reliably pay rent"
             if psi <= LOW_STRESS_PSI
-            else "High financial stress after obligations"
+            else "Applicant has limited remaining income after obligations, increasing payment risk"
         ),
     })
 
