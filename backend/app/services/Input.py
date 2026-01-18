@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from pathlib import Path
 
 # # -----------------------------
 # # 1. LOAD DATA AND TRAIN MODEL
@@ -25,10 +26,10 @@ from sklearn.linear_model import LinearRegression
 # model.fit(X_train, y_train)
 
 FEATURES = [
-    'credit_score',
     'income_stability',
     'eviction_history',
     'criminal_history',
+    'monthly_income',
     'voucher',
     'employment_years',
     'savings_ratio',
@@ -36,14 +37,18 @@ FEATURES = [
 ]
 
 NUMERIC_COLS = [
-    'credit_score',
     'income_stability',
+    'monthly_income',
     'employment_years',
     'savings_ratio',
     'rental_history_years'
 ]
 
-def train_model(path="../data/tenant_data_biased_train.csv"):
+BACKEND_DIR = Path(__file__).resolve().parents[2]   # .../backend
+DATA_PATH = BACKEND_DIR / "data" / "tenant_data_biased_train.csv"
+
+def train_model(path=DATA_PATH):
+    path = Path(path)
     train_df = pd.read_csv(path)
 
     X_train = train_df[FEATURES].copy()
@@ -61,9 +66,7 @@ def train_model(path="../data/tenant_data_biased_train.csv"):
 
 MODEL, SCALER, MIN_SCORE, MAX_SCORE = train_model()
 
-# -----------------------------
-# 2. USER INPUT FUNCTION
-# -----------------------------
+
 # def get_user_input():
 #     print("Please enter the following tenant information:")
 #     credit_score = float(input("Credit score (300-850): "))
@@ -92,6 +95,7 @@ def preprocess_data(data):
     df = pd.DataFrame([{
         'credit_score': data.credit_score,
         'income_stability': data.income_stability,
+        'monthly_income': data.monthly_income,
         'eviction_history': int(data.eviction_history),
         'criminal_history': int(data.criminal_history),
         'voucher': int(data.voucher),
