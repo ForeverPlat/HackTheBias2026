@@ -1,24 +1,28 @@
-from fastapi import FastAPI
 from fastapi import APIRouter 
-from pydantic import BaseModel
+from app.schemas.tenant import TenantInput 
 from app.services import Input
-
-app = FastAPI()
+from app.services.features import compute_features
+from app.services.score import score_features
+from app.services.explain import explain_features
 
 router = APIRouter(prefix="/api/score", tags=["Score"])
 
-class ScoreRequest(BaseModel):
-    credit_score: float
-    income_stability: float
-    eviction_history: bool # convert to int
-    criminal_history: bool # convert to int
-    voucher: bool # convert to int
-    employment_years: float
-    savings_ratio: float # 0 to 1
-    rental_history_years: float
-    
-
 @router.post("")
-async def get_score(request: ScoreRequest): # eventyally send in user id as well so u get a specific user preferences
+def get_score(request: TenantInput): # eventyally send in user id as well so u get a specific user preferences
     # return await recommendation.get_recommendations(request.restaurants, request.user_id)
-    return Input.score_tenant(request)
+
+    # calc fincial ftrs
+    features = compute_features(request)
+
+    # eval risk based on features
+    score_result = score_features(features)
+
+    # gen explaintion
+    explaintions = explain_features(features)
+
+
+    return {
+        "score": score_result["score"],
+        "risk_level": score_result["risk_level"],
+        "breakdown": explaintions
+    }
