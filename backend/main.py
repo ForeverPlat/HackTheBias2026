@@ -6,8 +6,7 @@ app = FastAPI(title="Restaurant Finder API")
 
 app.include_router(score.router)
 
-@app.get("/")
+
+@app.get("/api/")
 def read_root():
     return {"status": "ok", "message": "Fair Tenant Screening"}
-
-
