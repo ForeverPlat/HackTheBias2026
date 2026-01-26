@@ -30,11 +30,9 @@ function fmtSigned(n: number) {
 function labelChange(delta: number, goodDirection: "up" | "down") {
   if (delta === 0) return "no change";
 
-  const isGood =
-    goodDirection === "up" ? delta > 0 : delta < 0;
+  const isGood = goodDirection === "up" ? delta > 0 : delta < 0;
 
-  const word =
-    delta > 0 ? "increase" : "reduction";
+  const word = delta > 0 ? "increase" : "reduction";
 
   return isGood ? `${word} (good)` : `${word} (bad)`;
 }
@@ -49,16 +47,24 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
   const newScore = clamp(data.new_model.score);
   const scoreDelta = newScore - legacyScore;
 
-  const legacyImpact = typeof data.legacy_model.impact === "number" ? data.legacy_model.impact : null;
-  const newImpact = typeof data.new_model.impact === "number" ? data.new_model.impact : null;
+  const legacyImpact =
+    typeof data.legacy_model.impact === "number"
+      ? data.legacy_model.impact
+      : null;
+  const newImpact =
+    typeof data.new_model.impact === "number" ? data.new_model.impact : null;
 
-  const impactDelta = legacyImpact != null && newImpact != null ? newImpact - legacyImpact : null; 
-  const impactPct = legacyImpact != null && newImpact != null ? percentDelta(legacyImpact, newImpact) : null;
+  const impactDelta =
+    legacyImpact != null && newImpact != null ? newImpact - legacyImpact : null;
+  const impactPct =
+    legacyImpact != null && newImpact != null
+      ? percentDelta(legacyImpact, newImpact)
+      : null;
 
   const improvements: Array<{
     title: string;
     detail: string;
-    strength: number; 
+    strength: number;
     good: boolean;
   }> = [];
 
@@ -80,7 +86,10 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
 
   improvements.push({
     title: "Reliability score",
-    detail: scoreDelta === 0 ? "no change" : `${scoreDelta > 0 ? "increased" : "decreased"} by ${Math.abs(scoreDelta)}`,
+    detail:
+      scoreDelta === 0
+        ? "no change"
+        : `${scoreDelta > 0 ? "increased" : "decreased"} by ${Math.abs(scoreDelta)}`,
     strength: Math.abs(scoreDelta) / 100,
     good: scoreDelta > 0,
   });
@@ -108,12 +117,21 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
       {/* Headline callout */}
       <div className="card" style={{ padding: 14 }}>
         <div style={{ fontWeight: 900, fontSize: 18 }}>{headline}</div>
-        <div className="muted" style={{ marginTop: 6 }}>{subline}</div>
+        <div className="muted" style={{ marginTop: 6 }}>
+          {subline}
+        </div>
       </div>
 
       {/* Top 2 improvements */}
       <div className="card" style={{ padding: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "baseline",
+          }}
+        >
           <strong>Top improvements</strong>
           <span className="muted">highlighting strongest changes</span>
         </div>
@@ -132,7 +150,9 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
             >
               <div>
                 <div style={{ fontWeight: 900 }}>{x.title}</div>
-                <div className="muted" style={{ marginTop: 2 }}>{x.detail}</div>
+                <div className="muted" style={{ marginTop: 2 }}>
+                  {x.detail}
+                </div>
               </div>
               <span
                 className="badge"
@@ -163,14 +183,24 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
         }}
       >
         <div className="card" style={{ padding: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
             <strong>Legacy model</strong>
-            <span className="muted">{riskLabel(data.legacy_model.risk_level)}</span>
+            <span className="muted">
+              {riskLabel(data.legacy_model.risk_level)}
+            </span>
           </div>
 
           <div style={{ marginTop: 10, fontSize: 34, fontWeight: 900 }}>
             {legacyScore}
-            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>/100</span>
+            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>
+              /100
+            </span>
           </div>
 
           <div style={{ marginTop: 10 }}>
@@ -178,20 +208,32 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
               Expected loss
             </div>
             <div style={{ fontWeight: 900 }}>
-              {legacyImpact == null ? "—" : legacyImpact.toLocaleString()}
+              {legacyImpact == null
+                ? "—"
+                : Number(legacyImpact).toLocaleString()}
             </div>
           </div>
         </div>
 
         <div className="card" style={{ padding: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
             <strong>FairTenant model</strong>
-            <span style={{ fontWeight: 800 }}>{riskLabel(data.new_model.risk_level)}</span>
+            <span style={{ fontWeight: 800 }}>
+              {riskLabel(data.new_model.risk_level)}
+            </span>
           </div>
 
           <div style={{ marginTop: 10, fontSize: 34, fontWeight: 900 }}>
             {newScore}
-            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>/100</span>
+            <span className="muted" style={{ fontSize: 14, marginLeft: 6 }}>
+              /100
+            </span>
           </div>
 
           <div style={{ marginTop: 10 }}>
@@ -199,7 +241,7 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
               Expected loss
             </div>
             <div style={{ fontWeight: 900 }}>
-              {newImpact == null ? "—" : newImpact.toLocaleString()}
+              {newImpact == null ? "—" : Number(newImpact).toLocaleString()}
             </div>
           </div>
         </div>
@@ -208,19 +250,39 @@ export default function ModelComparison({ data }: { data: CompareResponse }) {
       {/* Delta row */}
       <div className="card" style={{ padding: 14 }}>
         <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
             <span className="muted">Score delta (new − legacy)</span>
             <strong>{fmtSigned(scoreDelta)}</strong>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
             <span className="muted">Expected loss delta (new − legacy)</span>
             <strong>
-              {impactDelta == null ? "—" : `${fmtSigned(impactDelta)} (${labelChange(impactDelta, "down")})`}
+              {impactDelta == null
+                ? "—"
+                : `${fmtSigned(impactDelta)} (${labelChange(impactDelta, "down")})`}
             </strong>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
             <span className="muted">Expected loss change</span>
             <strong>
               {impactPct == null ? "—" : fmtPct0.format(impactPct)}
