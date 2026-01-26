@@ -8,6 +8,6 @@ app.include_router(score.router)
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Restaurant Finder API"}
+    return {"status": "ok", "message": "Fair Tenant Screening"}
 
 
